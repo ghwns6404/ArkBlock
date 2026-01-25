@@ -80,6 +80,8 @@ ARK BLOCK는 이러한 문제를 해결하기 위해
 
 ### 3.1 전체 아키텍처
 
+> 자세한 내용은 여기!!  🔍 [ArkBlock 아키텍쳐](./STRUCTURE.md)
+
 <img src="./media/전체구성도.png" width="500"/>
 
 - 클라이언트: 모델 설계 및 시각화
