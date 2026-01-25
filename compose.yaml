@@ -1,0 +1,84 @@
+services:
+  db:
+    image: "postgres:17.6"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: VeryUnsecurePassword123
+      POSTGRES_DB: arkblock_api
+    networks:
+      - arkblock
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./db-data/:/var/lib/postgresql/data/"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "arkblock_api"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  traefik:
+    image: "traefik:v3.5.0"
+    command:
+      - "--api=true"
+      - "--api.insecure=true"
+      - "--entryPoints.web.address=:3000"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+    networks:
+      - arkblock
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: always
+  apiserver:
+    image: "arkblock/apiserver:0.1.0"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    environment:
+      APP_DOCKER_IMAGES_AI-TRAIN: arkblock/apiserver/ai-train:0.1.0
+      APP_DOCKER_IMAGES_AI-OPTIMIZE: arkblock/apiserver/ai-optimize:0.1.0
+      APP_S3_KEY: S3키로대체해주세요
+      APP_S3_SECRET: S3비밀키로대체해주세요
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_PASSWORD: VeryUnsecurePassword123
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/arkblock_api
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_OUTPUT_ANSI_ENABLED: always
+      SPRING_PROFILES_ACTIVE: prod
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+    networks:
+      - arkblock
+    volumes:
+      - "/app/run/:/app/run/"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/tmp/arkblock-apiserver/:/tmp/arkblock-apiserver/"
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.apiserver.rule=Host(`localhost`)&&PathPrefix(`/api/`)"
+      - "traefik.http.routers.apiserver.entrypoints=web"
+      - "traefik.http.routers.apiserver.middlewares=apiserver-stripprefix"
+      - "traefik.http.services.apiserver.loadbalancer.server.port=8080"
+
+      - "traefik.http.middlewares.apiserver-stripprefix.stripprefix.prefixes=/api"
+  web:
+    image: "arkblock/web:0.1.0"
+    restart: always
+    networks:
+      - arkblock
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.web.rule=Host(`localhost`)"
+      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.services.web.loadbalancer.server.port=8080"
+
+networks:
+  arkblock:

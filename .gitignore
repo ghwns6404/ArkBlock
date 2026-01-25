@@ -1,0 +1,26 @@
+
+# 환경 변수 (절대 업로드 금지)
+.env
+.env.*
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 빌드 산출물
+node_modules/
+dist/
+build/
+__pycache__/
+
+# 로그
+*.log
+
+# 압축 파일
+*.zip
+
+# Gradle
+.gradle/
+
