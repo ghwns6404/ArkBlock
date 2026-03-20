@@ -195,4 +195,4 @@ ARK BLOCK는 이러한 문제를 해결하기 위해
 ---
 
 ## 9. 실행 및 사용 가이드
-👉 [Launch Guide](./docs/LaunchGuide.md)
+👉 [Launch Guide](https://github.com/ghwns6404/ArkBlock/blob/main/LaunchGuide.md)
